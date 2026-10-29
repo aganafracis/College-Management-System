@@ -1,4 +1,4 @@
-# Team 3 - Java Swing Authentication & Registration System
+# Team 3 - College-Management-System (Java Swing Authentication & Registration System)
 
 A desktop application built with Java Swing and MySQL providing role-aware authentication and registration for Students and Faculty.
 

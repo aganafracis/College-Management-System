@@ -1,0 +1,11 @@
+# Compiled Java classes
+*.class
+
+# Secret database credentials
+db.properties
+
+# IDE and temporary artifacts
+.system_generated/
+.vscode/
+.idea/
+*.log

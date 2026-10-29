@@ -1,0 +1,18 @@
+# =====================================================================
+# Database Configuration Example
+# Copy this file to 'db.properties' and set your local credentials.
+# Do NOT commit 'db.properties' to source control.
+# =====================================================================
+
+# JDBC Connection URL
+# For local MySQL without SSL:
+db.url=jdbc:mysql://localhost:3306/team3_auth_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+
+# For production MySQL with SSL:
+# db.url=jdbc:mysql://db.production.edu:3306/team3_auth_db?useSSL=true&requireSSL=true&serverTimezone=UTC
+
+# Database user
+db.user=root
+
+# Database password
+db.password=

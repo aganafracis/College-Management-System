@@ -34,10 +34,22 @@ A desktop application built with Java Swing and MySQL providing role-aware authe
    ```
 
 This creates:
-- Database: `team3_auth_db` (using `utf8mb4` charset and `InnoDB` engine).
-- Table `accounts`: Stores shared login credentials, role (`STUDENT` or `FACULTY`), and cryptographic password hashes.
-- Table `student_profiles`: Linked 1-to-1 with `accounts` by `account_id`, with unique constraints on `register_number` and `email`.
-- Table `faculty_profiles`: Linked 1-to-1 with `accounts` by `account_id`, with unique constraints on `faculty_id` and `email`.
+- Database: `team3_auth_db` (using `utf8mb4` charset and `InnoDB` engine)
+- **15 tables** for complete college management system:
+
+**Authentication & Profiles (3 tables):**
+- `accounts` - User credentials and roles
+- `student_profiles` - Student-specific information  
+- `faculty_profiles` - Faculty-specific information
+
+**Extended Management (9 tables):**
+- `users`, `departments`, `students`, `faculty` - User and department management
+- `semesters`, `subjects`, `faculty_subjects` - Academic data
+- `academic_records`, `results` - Student performance tracking
+
+**Library & Grievances (3 tables):**
+- `books`, `library_transactions` - Library management
+- `complaints` - Student complaints system
 
 ---
 
@@ -49,9 +61,9 @@ Configuration is loaded dynamically with the following priority order:
 3. **Safe Local Defaults**: `jdbc:mysql://localhost:3306/team3_auth_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC`, user: `root`, blank password.
 
 ### Setting Up `db.properties`
-Copy `db.properties.example` to `db.properties`:
+Copy the example file from config folder:
 ```powershell
-Copy-Item db.properties.example db.properties
+Copy-Item config/db.properties.example db.properties
 ```
 Edit `db.properties` with your database credentials:
 ```properties
@@ -65,29 +77,30 @@ db.password=your_secret_password
 
 ## 4. How to Build and Run the Application
 
-The project uses standard JDK commands without external build plugins.
+### Using Build Scripts (Recommended)
 
-### Build (Compile)
-From the project root directory:
 ```powershell
-javac -cp ".;lib/*" *.java
+# Compile all Java files
+.\compile.ps1
+
+# Run the application
+.\run.ps1
+
+# Clean build files
+.\clean.ps1
 ```
 
-### Run Automated Acceptance Tests
+### Manual Commands
+
 ```powershell
-java -cp ".;lib/mysql-connector-j-8.3.0.jar" AppTest
+# Compile manually
+javac -cp ".;lib/*" -d build src/backend/**/*.java src/frontend/**/*.java
+
+# Run manually  
+java -cp "build;lib/mysql-connector-j-8.3.0.jar" LoginFrame
 ```
 
-### Run the Application (Login Screen)
-```powershell
-java -cp ".;lib/mysql-connector-j-8.3.0.jar" LoginFrame
-```
-
-*Note: You can also launch each registration screen standalone if needed:*
-```powershell
-java -cp ".;lib/mysql-connector-j-8.3.0.jar" StudentRegistration
-java -cp ".;lib/mysql-connector-j-8.3.0.jar" FacultyRegistration
-```
+**Note:** The `compile.ps1` script automatically finds and compiles ALL `.java` files in the project, including new files you add.
 
 ---
 
@@ -155,11 +168,58 @@ java -cp ".;lib/mysql-connector-j-8.3.0.jar" FacultyRegistration
 
 | Issue | Likely Cause | Solution |
 | :--- | :--- | :--- |
-| **"Cannot reach MySQL server"** | MySQL service is not running or port is incorrect | Check if MySQL is running (`net start MySQL80` or start MySQL in XAMPP/Docker). Verify host and port in `db.properties`. |
-| **"Database 'team3_auth_db' does not exist"** | `schema.sql` was not run | Run `mysql -u root -p < schema.sql` to initialize the database and tables. |
+| **"Cannot reach MySQL server"** | MySQL service is not running or port is incorrect | Check if MySQL is running (`Get-Service MySQL80` or `Start-Service MySQL80`). Verify host and port in `db.properties`. |
+| **"Database 'team3_auth_db' does not exist"** | `schema.sql` was not run | Run `Get-Content database/schema.sql \| mysql -u root -p` to initialize the database and all 15 tables. |
 | **"Database access denied for user..."** | Wrong MySQL username or password in `db.properties` | Open `db.properties` and verify `db.user` and `db.password`. |
 | **"The username '...' is already taken"** | Account with this username already exists | Choose a different unique username. |
 | **"The register number '...' is already registered"** | Duplicate student register number | Enter the correct assigned student register number. |
 | **"Invalid Date of Birth format"** | Date format is not `YYYY-MM-DD` | Enter date in ISO format, e.g., `2003-05-15`. |
 | **SSL/TLS handshake errors** | MySQL server SSL requirements mismatch | For local dev, ensure `useSSL=false&allowPublicKeyRetrieval=true` is set. In production, configure valid CA certificates and set `useSSL=true&requireSSL=true`. |
-| **"MySQL Connector/J driver class not found"** | Missing JAR in classpath | Ensure compile and run commands include `-cp ".;lib/mysql-connector-j-8.3.0.jar"` or `-cp ".;lib/*"`. |
+| **"MySQL Connector/J driver class not found"** | Missing JAR in classpath | Ensure `lib/mysql-connector-j-8.3.0.jar` exists. |
+| **Compilation errors** | Java version incompatible | Ensure Java 17+ is installed: `java -version` |
+
+---
+
+## 9. Project Structure
+
+```
+team3/
+├── src/
+│   ├── backend/              # Backend/Business Logic Layer
+│   │   ├── config/           # DatabaseConfig.java
+│   │   ├── services/         # AuthService.java
+│   │   └── utils/            # PasswordUtil, ValidationUtil, PreferencesUtil, AppTest
+│   │
+│   └── frontend/             # Frontend/Presentation Layer
+│       ├── ui/               # LoginFrame.java
+│       └── forms/            # StudentRegistration, FacultyRegistration
+│
+├── database/
+│   └── schema.sql           # Complete database schema (15 tables)
+│
+├── config/
+│   ├── db.properties        # Database configuration (source)
+│   └── db.properties.example # Configuration template
+│
+├── lib/
+│   └── mysql-connector-j-8.3.0.jar  # MySQL JDBC driver
+│
+├── build/                   # Compiled .class files (auto-generated)
+│
+├── compile.ps1              # Automated compilation script
+├── run.ps1                  # Application launcher script
+├── clean.ps1                # Build cleanup script
+├── db.properties            # Active database config (root copy)
+│
+├── README.md                # This file
+├── QUICK_START.md           # Quick reference guide
+└── PROJECT_STRUCTURE.md     # Detailed architecture documentation
+```
+
+**Key Points:**
+- **Backend** (`src/backend/`) - Business logic, database operations, no UI
+- **Frontend** (`src/frontend/`) - User interface with Java Swing components  
+- **Scripts** - `compile.ps1` auto-finds ALL `.java` files (new or old)
+- **Database** - Complete schema with 15 tables in `database/schema.sql`
+
+For more details, see `PROJECT_STRUCTURE.md` and `QUICK_START.md`.
